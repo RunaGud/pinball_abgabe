@@ -33,7 +33,8 @@ class Launcher:
                          [s_width * 1 - ball_radius * 4, s_height * 0.76]]
         return launch_stripe
 
-    def launch(self, start_pos, ball_radius, time, screen, clock_tick, max_speed):
+    def launch(self, ball_radius, time, screen, clock_tick, max_speed):
+        start_pos = Vector(screen.get_width() - (ball_radius * 1.3), screen.get_height() * 0.7)
         height_money = min(self.current_money, 100)
         pygame.draw.polygon(screen,
                             [255, 160, 0],

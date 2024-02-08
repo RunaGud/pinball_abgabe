@@ -13,9 +13,10 @@ class Ball(GameObject):
     This class represents a ball.
     """
     Balls = []
+    default_ball_score_point = 2
 
-    def __init__(self, pos, speed, radius, mass, color, score_tracker: ScoreTracker, movable=True):
-        super().__init__(pos, speed, movable)
+    def __init__(self, pos, speed, radius, mass, color, score_tracker: ScoreTracker, movable=True, oscillator=None):
+        super().__init__(pos, speed, movable, oscillator)
         self.radius = radius
         self.mass = mass
         self.color = color
@@ -59,6 +60,7 @@ class Ball(GameObject):
         else:
             self.mass = 10000
             self.pos += self.speed
+        self.oscillate()
 
         # Draw Balls
         pygame.draw.circle(screen,
@@ -75,7 +77,7 @@ class Ball(GameObject):
             jpos1 = j.pos + j.speed * dt
             if length(ipos1 - jpos1) <= (self.radius + j.radius) and not prev_collide:
                 prev_collide = True
-                self.score_tracker.update()
+                self.score_tracker.update(Ball.default_ball_score_point)
                 collide(self, j, loss, dt)
 
             else:

@@ -19,8 +19,8 @@ class ScoreTracker:
     def get_score(self):
         return self.score
 
-    def update(self):
-        self.score += 1
+    def update(self, score_points: int):
+        self.score += score_points
 
     def show(self):
         score_display_text = ScoreTracker.score_display_text_prefix + str(self.score)

@@ -1,12 +1,12 @@
 import math
 import pygame
 
-
+from GameObject import GameObject
 import ScoreTracker
-from Vector import Vector, length, smallest_angle, dot, normalize, vector_to_tupel
+from Vector import Vector, length, dot, normalize, vector_to_tupel
 
 
-class Polygon:
+class Polygon(GameObject):
     """
     This class represents a polygon with n vertices. The polygons should always be drawn in an anti-clockwise direction.
     """
@@ -14,7 +14,8 @@ class Polygon:
     big_integer = 1000000
 
     def __init__(self, pos: list[Vector], pivot_point: Vector, speed: Vector, color: list[int],
-                 score_tracker: ScoreTracker, angle_speed=0, loss=0.1, movable=False, oscillator=None):
+                 score_tracker: ScoreTracker, score_points: int = 1,
+                 angle_speed=0, loss=0.1, movable=False, oscillator=None):
         """
         The initialization method
         Arguments:
@@ -28,6 +29,7 @@ class Polygon:
             movable: if the polygon is can be moved by collisions or not. True is movable, false not.
             oscillator: if the polygon constantly moves
         """
+        super().__init__(pos, speed, movable, oscillator)
         self.size = len(pos)
         self.vertices = []
         for i in range(self.size):
@@ -42,8 +44,7 @@ class Polygon:
         self.movable = movable
         self._calculate_edges()
         self.score_tracker: ScoreTracker = score_tracker
-        self.oscillator = oscillator
-        self.oscillation_step = 0
+        self.score_points = score_points
         Polygon.Polygons.append(self)
 
     def _calculate_edges(self):
@@ -59,7 +60,7 @@ class Polygon:
                 # vector between self.size[vertex] and self.size[vertex + 1]
                 self.edges.append(self.vertices[vertex + 1] - self.vertices[vertex])
 
-    def _move(self, distance):
+    def move(self, distance):
         """
         Move the polygon (translation) given distance.
         :param distance: the distance to move the polygon.
@@ -140,40 +141,33 @@ class Polygon:
     def _collide(self, dt, ball, collision_edge: Vector, collision_vector: Vector, launcher):
         if collision_edge is not None:
             new_ball_position: Vector = ball.pos + ball.speed * dt
-            alpha = -smallest_angle(ball.speed, collision_edge)
             collision_point = Vector(collision_vector.x, collision_vector.y)
 
             turning_radius = collision_point - self.pivot_point
-            speed_polygon = (turning_radius * self.angle_speed)
-            if math.isclose(self.angle_speed, 0):
-                vorzeichen = 1
-            else:
-                vorzeichen = self.angle_speed / abs(self.angle_speed)
-            speed_polygon = self.speed + (Vector.rotate(speed_polygon, (math.pi / 2)) * vorzeichen)
+            speed_polygon = turning_radius * self.angle_speed
+            speed_polygon = self.speed + (Vector.rotate(speed_polygon, (math.pi / 2)))
             normale = normalize(new_ball_position - collision_point)
             speed_normal = dot(speed_polygon, normale)
             if speed_normal <= 0:
                 speed_normal = 0
-
-            n: Vector = normalize(collision_edge)
-            absolute_v = length(ball.speed) * (1 - self.loss)
             if ball.movable:
-                ball.speed = n.rotate(alpha) * absolute_v + normale * speed_normal
-                ball.pos = ball.pos + normalize(new_ball_position - collision_point) * 6
-            self.score_tracker.update()
+                ball.speed = ball.speed + normale * (2 * abs(dot(ball.speed, normale)) *(1-self.loss) + speed_normal)
+                ball.pos = ball.pos + normalize(new_ball_position - collision_point) * 1
+            self.score_tracker.update(self.score_points)
             launcher.current_money += 2
 
     def validate_collision(self, dt, ball, launcher):
         collision_edge, collision_vector = self._collision_detection(dt, ball)
         self._collide(dt, ball, collision_edge, collision_vector, launcher)
 
+
     def update(self, screen, dt):
         if self.movable:
             self._rotate(self.angle_speed * dt)
-            self._move(self.speed * dt)
+            self.move(self.speed * dt)
             self._calculate_edges()
         vertices_points = []
-
+        self.oscillate()
         for i in range(self.size):
             vertices_points.append(vector_to_tupel(self.vertices[i]))
         pygame.draw.polygon(screen, (self.color[0], self.color[1], self.color[2]), vertices_points)
