@@ -1,3 +1,5 @@
+import math
+
 import pygame
 
 from Polygon import Polygon
@@ -6,6 +8,9 @@ from Vector import Vector
 
 
 class Flipper(Polygon):
+    """
+    Represents the flippers of the game
+    """
     default_speed = Vector(0, 0)
     default_angle_speed = 0.0
     default_loss = 0
@@ -21,18 +26,14 @@ class Flipper(Polygon):
         self.key = key
         self.max_angle_speed = max_angle_speed
 
-    def update(self, screen, dt):  # todo:V(F)
+    def update(self, screen, dt):
         key = pygame.key.get_pressed()
         if key[self.key]:
             self.angle_speed = self.max_angle_speed
-            # brake by 90 degrees
-            if self.angle > 1:
-                self.angle_speed = 0.0
-            # brake by -90 degrees
-            elif self.angle < -1:
+            if abs(self.angle) > 1:
                 self.angle_speed = 0.0
 
-        elif (self.angle ** 2) - 0.001 <= 0.001:
+        elif math.isclose(abs(self.angle), 0, abs_tol=0.001):
             self.angle_speed = 0
         else:
             self.angle_speed = -self.max_angle_speed

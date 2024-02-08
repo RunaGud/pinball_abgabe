@@ -132,6 +132,7 @@ class Polygon:
 
             if ball_radius_close_to_edge and ball_near_enough_to_polygon:
                 if (collision_with_smallest_distance is None) or (distance <= collision_with_smallest_distance):
+                    collision_with_smallest_distance = distance
                     best_collision_edge = edge
                     best_collision_vector = collision_vector
         return best_collision_edge, best_collision_vector

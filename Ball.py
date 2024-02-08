@@ -116,10 +116,9 @@ def collide(b1, b2, loss, dt):
     norm = Vector(n.x, -n.y)
     if b1.movable:
         # Speed for b1 is calculated from the radial and tangential components  put together with help of n and norm.
-        # The term b2 takes care of the initial galileo transformation
-        b1.speed = norm * vp - n * vt1 + b2.speed
+        b1.speed = norm * vp - n * vt1
         b1.speed = b1.speed * (1 - loss)
-
+    b1.speed = b1.speed + b2.speed
     # Radial speed for b2 (Formula for elastic collision, again with b2.speed = 0)
     vt2 = b1.mass * 2 * vt / (b1.mass + b2.mass)
 
